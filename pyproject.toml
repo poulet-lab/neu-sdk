@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neu-sdk"
+dynamic = ["version"]
+description = 'Neu sdk module'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "GPL-3.0-or-later"
+authors = [
+  { name = "Viktor Karamanis", email = "viktor.karamanis@outlook.com" },
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "pyjwt==2.9.0",
+  "bcrypt==4.2.0",
+  "python-dotenv==1.0.1",
+  "pydantic==2.8.2",
+  "pydantic-settings==2.4.0",
+  "rich==13.7.1"
+]
+
+[project.urls]
+Homepage = "https://github.com/poulet-lab/neu-sdk"
+Documentation = "https://github.com/poulet-lab/neu-sdk"
+Changelog = "https://github.com/poulet-lab/neu-sdk/release-notes/"
+Source = "https://github.com/poulet-lab/neu-sdk"
+
+
+[tool.hatch.version]
+path = "neu_sdk/__init__.py"
+
+[tool.hatch.envs.types]
+extra-dependencies = ["mypy>=1.0.0"]
+
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:neu_sdk tests}"
+
+[tool.coverage.run]
+source_pkgs = ["neu_sdk", "tests"]
+branch = true
+parallel = true
+
+[tool.coverage.paths]
+neu_sdk = ["neu_sdk", "*/neu-sdk/neu_sdk"]
+tests = ["tests", "*/neu-sdk/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
