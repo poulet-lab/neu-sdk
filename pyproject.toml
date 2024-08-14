@@ -30,7 +30,8 @@ dependencies = [
   "python-dotenv==1.0.1",
   "pydantic==2.8.2",
   "pydantic-settings==2.4.0",
-  "rich==13.7.1"
+  "rich==13.7.1",
+  "aiohttp==3.10.3",
 ]
 
 [project.urls]

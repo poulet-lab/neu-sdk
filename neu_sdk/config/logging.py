@@ -1,6 +1,8 @@
-from logging import INFO, Logger, Formatter
+from logging import Logger, Formatter, getLogger
 from rich.console import Console
 from rich.logging import RichHandler
+
+from neu_sdk.config import settings
 
 
 def setup_logging(
@@ -13,7 +15,7 @@ def setup_logging(
     tracebacks_extra_lines: int = 3,
     tracebacks_word_wrap: bool = True,
     tracebacks_show_locals: bool = True,
-    level: int | str = INFO,
+    level: int | str = settings.log_level.upper(),
 ) -> None:
 
     console = Console(width=terminal_width) if terminal_width else None
@@ -32,3 +34,7 @@ def setup_logging(
 
     logger.setLevel(level)
     logger.propagate = False
+
+
+LOGGER = getLogger(settings.service.name)
+setup_logging(logger=LOGGER, level=settings.log_level.upper())
