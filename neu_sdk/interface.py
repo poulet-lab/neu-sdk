@@ -21,10 +21,10 @@ def create_app():
             )
         except Exception as e:
             raise e
-
         for service in settings.dependencies:
             try:
-                await check_service(service)
+                data = await check_service(settings.dependencies[service])
+                settings.dependencies[service] = f"http://{data["Address"]}:{data["Port"]}"
             except Exception as e:
                 LOGGER.warning(
                     f"Dependent service {service} not found some functions will not work"

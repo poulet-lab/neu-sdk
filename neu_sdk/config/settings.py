@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
     service: Service = Service()
-    dependencies: list = Field([], description="Other service dependencies")
+    dependencies: dict = Field({}, description="Other service dependencies")
 
     consul: Consul = Consul()
     redis_url: str = Field("redis://localhost:6379/0")
