@@ -10,11 +10,8 @@ from fastapi.security import HTTPBearer
 from jwt import encode, decode
 from jwt.exceptions import InvalidTokenError
 
-from neu_sdk.config import setup_logging
+from neu_sdk.config import LOGGER
 from neu_sdk.config.settings import settings
-
-_LOGGER = getLogger(f"neu_sdk.{__name__}")
-setup_logging(logger=_LOGGER, level=settings.log_level.upper())
 
 KIND = {"session": 0, "api": 1}
 SALT = gensalt()
@@ -74,7 +71,7 @@ async def create_token(
         )
 
     except Exception as e:
-        _LOGGER.info(f"{_getframe().f_code.co_name}: {e}")
+        LOGGER.info(f"neu_sdk.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise HTTPException(400, "There was an error creating the token")
 
     return token
