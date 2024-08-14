@@ -21,25 +21,25 @@ class Consul(BaseModel):
     port: int = Field(8500)
 
 
-# class Cors(BaseModel):
-#     enable: bool = Field(False)
-#     allow_origins: tuple[str] = Field(("*",))
-#     allow_credentials: bool = Field(True)
-#     allow_methods: tuple[str] = Field(("*",))
-#     allow_headers: tuple[str] = Field(("*",))
+class Cors(BaseModel):
+    enable: bool = Field(False)
+    allow_origins: tuple[str] = Field(("*",))
+    allow_credentials: bool = Field(True)
+    allow_methods: tuple[str] = Field(("*",))
+    allow_headers: tuple[str] = Field(("*",))
 
 
-# class JWT(BaseModel):
-#     key: str = Field("")
-#     algorithm: str = Field("HS256")
-#     expiration: int = Field(10)
+class JWT(BaseModel):
+    key: str = Field("")
+    algorithm: str = Field("HS256")
+    expiration: int = Field(10)
 
 
-# class Authorization(BaseModel):
-#     enable: bool = "True"
-#     jwt: JWT = JWT()
-#     cors: Cors = Cors()
-#     token_url: str = "auth/login"
+class Authorization(BaseModel):
+    enable: bool = "True"
+    jwt: JWT = JWT()
+    cors: Cors = Cors()
+    token_url: str = "auth/login"
 
 
 class Settings(BaseSettings):
@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     consul: Consul = Consul()
     redis_url: str = Field("redis://localhost:6379/0")
 
-    # authorization: Authorization = Authorization()
+    authorization: Authorization = Authorization()
 
     log_level: Literal[
         "critical",
