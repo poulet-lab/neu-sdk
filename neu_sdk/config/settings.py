@@ -13,7 +13,6 @@ class Service(BaseModel):
     name: str = Field("")
     host: str = Field("0.0.0.0")
     port: int = Field(8000)
-    root_path: str = Field("")
     docs: Docs = Docs()
 
 
@@ -52,7 +51,6 @@ class Settings(BaseSettings):
         extra="ignore",
     )
     service: Service = Service()
-    dependencies: dict = Field({}, description="Other service dependencies")
 
     consul: Consul = Consul()
     redis_url: str = Field("redis://localhost:6379/0")

@@ -1,34 +1,38 @@
 from socket import gethostname
 from aiohttp import ClientSession
+from fastapi import HTTPException
 from neu_sdk.config.settings import settings
 
+CONSUL_URL = f"http://{settings.consul.host}:{settings.consul.port}"
 
-async def ping_consul() -> dict:
+
+async def ping_consul():
     async with ClientSession() as session:
-        async with session.get(
-            f"http://{settings.consul.host}:{settings.consul.port}/v1/status/peers"
-        ) as resp:
-            assert resp.status == 200
-            return await resp.json(content_type=resp.content_type)
+        async with session.get(f"{CONSUL_URL}/v1/status/peers") as resp:
+            if resp.status != 200:
+                raise HTTPException(resp.status, await resp.text())
 
 
-async def check_service(name: str = settings.service.name) -> dict:
+async def get_service(service_id: str = settings.service.name) -> dict:
     async with ClientSession() as session:
-        async with session.get(
-            f"http://{settings.consul.host}:{settings.consul.port}/v1/agent/service/{name}"
-        ) as resp:
-            assert resp.status == 200
-            return await resp.json(content_type=resp.content_type)
+        async with session.get(f"{CONSUL_URL}/v1/agent/service/{service_id}") as resp:
+            data = await resp.json(content_type=resp.content_type)
+            if resp.status != 200:
+                raise HTTPException(resp.status, data)
+            return data
 
 
 async def register_service(
-    check_endpoint: str = "/ping", interval: str = "10s", tags: list[str] = []
+    service_id: str,
+    check_endpoint: str = "/ping",
+    interval: str = "30s",
+    tags: list[str] = [],
 ) -> str:
-    url = f"http://{settings.consul.host}:{settings.consul.port}/v1/agent/service/register"
     host = (
         gethostname() if settings.service.host == "0.0.0.0" else settings.service.host
     )
     data = {
+        "ID": service_id,
         "Name": settings.service.name,
         "Tags": tags,
         "Address": host,
@@ -40,6 +44,10 @@ async def register_service(
     }
 
     async with ClientSession() as session:
-        async with session.put(url, json=data) as resp:
-            assert resp.status == 200
-            return await resp.text()
+        async with session.put(
+            f"{CONSUL_URL}/v1/agent/service/register", json=data
+        ) as resp:
+            data = await resp.text()
+            if resp.status != 200:
+                raise HTTPException(resp.status, data)
+            return data

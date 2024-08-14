@@ -4,39 +4,22 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from aredis_om import Migrator
 
-from neu_sdk.registry import register_service, ping_consul, check_service
-from neu_sdk.config import settings, LOGGER
+from neu_sdk.registry import register_service
+from neu_sdk.config import settings
 
 
-def create_app():
+def create_app(service_id: str, tags: list = []):
+    # TODO maybe dependencies
+    if not settings.service.name:
+        settings.service.name = service_id
+
     async def lifespan(app):
-        try:
-            await ping_consul()
-        except Exception as e:
-            raise RuntimeError("Could not connect to consul")
-        try:
-            await register_service(
-                check_endpoint=f"{settings.service.root_path}/ping",
-                tags=["neu", "microservice", "breeding"],
-            )
-        except Exception as e:
-            raise e
-        for service in settings.dependencies:
-            try:
-                data = await check_service(settings.dependencies[service])
-                settings.dependencies[service] = f"http://{data["Address"]}:{data["Port"]}"
-            except Exception as e:
-                LOGGER.warning(
-                    f"Dependent service {service} not found some functions will not work"
-                )
-
+        await register_service(service_id=service_id, tags=tags)
         await Migrator().run()
-
         yield
 
     app = FastAPI(
         title=settings.service.name,
-        root_path=settings.service.root_path,
         docs_url=settings.service.docs.url if settings.service.docs.enable else None,
         redoc_url=None,
         version=__version__,
@@ -52,7 +35,9 @@ def create_app():
     def ping():
         return JSONResponse(
             {
+                "service_id": service_id,
                 "service_name": settings.service.name,
+                "version": __version__,
                 "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),
             }
         )
