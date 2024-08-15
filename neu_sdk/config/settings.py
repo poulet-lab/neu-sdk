@@ -25,8 +25,8 @@ class Consul(BaseModel):
 
 
 class Docs(BaseModel):
-    enable: bool = Field(True)
-    url: str = Field("/docs")
+    enable: bool = Field(False)
+    url: str = Field("/")
 
 
 class Service(BaseModel):
