@@ -7,15 +7,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Redis(BaseModel):
     host: str = Field("127.0.0.1")
     port: int = Field(6379)
+    database: int = Field(0)
     username: str | None = Field(None)
     password: str | None = Field(None)
-    database: int = Field(0)
 
 
 class Tyk(BaseModel):
     host: str = Field("127.0.0.1")
     port: int = Field(8080)
-    secret: int = Field("tyk")
+    secret: str = Field("tyk")
 
 
 class Consul(BaseModel):
