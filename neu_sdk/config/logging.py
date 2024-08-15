@@ -36,5 +36,5 @@ def setup_logging(
     logger.propagate = False
 
 
-LOGGER = getLogger(settings.service.name)
+LOGGER = getLogger(settings.neu.service.name)
 setup_logging(logger=LOGGER, level=settings.log_level.upper())

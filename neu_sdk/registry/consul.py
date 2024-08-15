@@ -13,7 +13,7 @@ async def ping_consul():
                 raise HTTPException(resp.status, await resp.text())
 
 
-async def get_service(service_id: str = settings.service.name) -> dict:
+async def get_service(service_id: str = settings.neu.service.name) -> dict:
     async with ClientSession() as session:
         async with session.get(f"{CONSUL_URL}/v1/agent/service/{service_id}") as resp:
             data = await resp.json(content_type=resp.content_type)
@@ -29,16 +29,18 @@ async def register_service(
     tags: list[str] = [],
 ) -> str:
     host = (
-        gethostname() if settings.service.host == "0.0.0.0" else settings.service.host
+        gethostname()
+        if settings.neu.service.host == "0.0.0.0"
+        else settings.neu.service.host
     )
     data = {
         "ID": service_id,
-        "Name": settings.service.name,
+        "Name": settings.neu.service.name,
         "Tags": tags,
         "Address": host,
-        "Port": settings.service.port,
+        "Port": settings.neu.service.port,
         "Check": {
-            "http": f"http://{host}:{settings.service.port}{check_endpoint}",
+            "http": f"http://{host}:{settings.neu.service.port}{check_endpoint}",
             "interval": interval,
         },
     }

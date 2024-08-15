@@ -1,7 +1,6 @@
 from bcrypt import hashpw, gensalt, checkpw
 from sys import _getframe
 from re import match
-from logging import getLogger
 from typing import Literal
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, Field

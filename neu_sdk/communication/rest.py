@@ -24,11 +24,11 @@ async def get_by_pk(
                 return data
     except ClientConnectorError as e:
         LOGGER.error(
-            f"{settings.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
+            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
         )
         raise HTTPException(500, "Internal Server Error")
     except Exception as e:
         LOGGER.error(
-            f"{settings.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
+            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
         )
         raise e

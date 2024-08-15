@@ -4,6 +4,25 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class Redis(BaseModel):
+    host: str = Field("127.0.0.1")
+    port: int = Field(6379)
+    username: str | None = Field(None)
+    password: str | None = Field(None)
+    database: int = Field(0)
+
+
+class Tyk(BaseModel):
+    host: str = Field("127.0.0.1")
+    port: int = Field(8080)
+    secret: int = Field("tyk")
+
+
+class Consul(BaseModel):
+    host: str = Field("127.0.0.1")
+    port: int = Field(8500)
+
+
 class Docs(BaseModel):
     enable: bool = Field(True)
     url: str = Field("/docs")
@@ -14,11 +33,6 @@ class Service(BaseModel):
     host: str = Field("0.0.0.0")
     port: int = Field(8000)
     docs: Docs = Docs()
-
-
-class Consul(BaseModel):
-    host: str = Field("127.0.0.1")
-    port: int = Field(8500)
 
 
 class Cors(BaseModel):
@@ -42,18 +56,21 @@ class Authorization(BaseModel):
     token_url: str = "auth/login"
 
 
+class Neu(BaseModel):
+    service: Service = Service()
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="neu_",
         env_nested_delimiter="_",
         env_file=find_dotenv(),
         env_file_encoding="utf-8",
         extra="ignore",
     )
-    service: Service = Service()
-
+    neu: Neu = Neu()
+    tyk: Tyk = Tyk()
     consul: Consul = Consul()
-    redis_url: str = Field("redis://localhost:6379/0")
+    redis: Redis = Redis()
 
     authorization: Authorization = Authorization()
 
@@ -67,3 +84,12 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+REDIS_URL = "redis://"
+if settings.redis.username:
+    REDIS_URL += settings.redis.username
+if settings.redis.password:
+    REDIS_URL += ":" + settings.redis.password
+if settings.redis.username or settings.redis.password:
+    REDIS_URL += "@"
+REDIS_URL += f"{settings.redis.host}:{settings.redis.port}/{settings.redis.database}"

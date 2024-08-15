@@ -4,23 +4,27 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from aredis_om import Migrator
 
+from neu_sdk.gateway import add_keyless
 from neu_sdk.registry import register_service
 from neu_sdk.config import settings
 
 
 def create_app(service_id: str, tags: list = []):
     # TODO maybe dependencies
-    if not settings.service.name:
-        settings.service.name = service_id
+    if not settings.neu.service.name:
+        settings.neu.service.name = service_id
 
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
+        await add_keyless(service_id=service_id)
         await Migrator().run()
         yield
 
     app = FastAPI(
-        title=settings.service.name,
-        docs_url=settings.service.docs.url if settings.service.docs.enable else None,
+        title=settings.neu.service.name,
+        docs_url=(
+            settings.neu.service.docs.url if settings.neu.service.docs.enable else None
+        ),
         redoc_url=None,
         version=__version__,
         license_info={
@@ -36,7 +40,7 @@ def create_app(service_id: str, tags: list = []):
         return JSONResponse(
             {
                 "service_id": service_id,
-                "service_name": settings.service.name,
+                "service_name": settings.neu.service.name,
                 "version": __version__,
                 "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),
             }
