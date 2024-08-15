@@ -1,22 +1,25 @@
 from sys import _getframe
 from aiohttp.typedefs import LooseHeaders
 from aiohttp.client_exceptions import ClientConnectorError
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession, ClientResponse, TCPConnector
+from aiohttp.resolver import AsyncResolver
 from fastapi import HTTPException
 from neu_sdk.config import LOGGER, settings
-from neu_sdk.registry import get_service
+
+connector = TCPConnector(
+    resolver=AsyncResolver(
+        nameservers=[f"{settings.consul.host}:{settings.consul.dns}"]
+    )
+)
 
 
 async def get_by_pk(
     service_id: str, pk: str, headers: LooseHeaders | None = None
 ) -> ClientResponse:
-    # TODO use consul dns
-    data = await get_service(service_id)
-
     try:
-        async with ClientSession() as session:
+        async with ClientSession(connector=connector) as session:
             async with session.get(
-                f"http://{data['Address']}:{data['Port']}/{pk}", headers=headers
+                f"http://{service_id}.service.consul/{pk}", headers=headers
             ) as resp:
                 data = await resp.json(content_type=resp.content_type)
                 if resp.status != 200:

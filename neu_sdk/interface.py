@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from aredis_om import Migrator
 
-from neu_sdk.gateway import add_keyless
+from neu_sdk.gateway import add_to_gateway
 from neu_sdk.registry import register_service
 from neu_sdk.config import settings
 
@@ -16,7 +16,7 @@ def create_app(service_id: str, tags: list = []):
 
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
-        await add_keyless(service_id=service_id)
+        await add_to_gateway(service_id=service_id)
         await Migrator().run()
         yield
 
