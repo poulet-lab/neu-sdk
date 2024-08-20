@@ -1,7 +1,7 @@
 from re import sub
 from __init__ import __version__
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.responses import JSONResponse
 from aredis_om import Migrator
 
@@ -40,8 +40,8 @@ def create_app(service_id: str, tags: list = []):
         root_path=endpoint,
     )
 
-    @app.get("/ping")
-    def ping():
+    @app.get("/ping", response_class=JSONResponse)
+    def ping() -> JSONResponse:
         return JSONResponse(
             {
                 "service_id": service_id,
@@ -50,5 +50,9 @@ def create_app(service_id: str, tags: list = []):
                 "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),
             }
         )
+
+    @app.post("/cleanup", response_class=Response)
+    async def cleanup() -> Response:
+        return Response("To be implemented on each microservice")
 
     return app

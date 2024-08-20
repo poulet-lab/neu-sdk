@@ -6,11 +6,13 @@ from fastapi import HTTPException
 from neu_sdk.config import LOGGER, settings
 from neu_sdk.registry import get_service
 
+# TODO use consul dns
+# TODO grpc maybe
+
 
 async def get_by_pk(
     service_id: str, pk: str, headers: LooseHeaders | None = None
 ) -> ClientResponse:
-    # TODO use consul dns
     data = await get_service(service_id)
     try:
         async with ClientSession() as session:
@@ -19,7 +21,57 @@ async def get_by_pk(
             ) as resp:
                 data = await resp.json(content_type=resp.content_type)
                 if resp.status != 200:
-                    raise HTTPException(404, data["detail"])
+                    raise HTTPException(resp.status, data["detail"])
+                return data
+    except ClientConnectorError as e:
+        LOGGER.error(
+            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
+        )
+        raise HTTPException(500, "Internal Server Error")
+    except Exception as e:
+        LOGGER.error(
+            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
+        )
+        raise e
+
+
+async def delete_by_pk(
+    service_id: str, pk: str, headers: LooseHeaders | None = None
+) -> ClientResponse:
+    data = await get_service(service_id)
+    try:
+        async with ClientSession() as session:
+            async with session.delete(
+                f"http://{data['Address']}:{data['Port']}/{pk}", headers=headers
+            ) as resp:
+                data = await resp.json(content_type=resp.content_type)
+                if resp.status != 200:
+                    raise HTTPException(resp.status, data["detail"])
+                return data
+    except ClientConnectorError as e:
+        LOGGER.error(
+            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
+        )
+        raise HTTPException(500, "Internal Server Error")
+    except Exception as e:
+        LOGGER.error(
+            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
+        )
+        raise e
+
+
+async def trigger_cleanup(
+    service_id: str, headers: LooseHeaders | None = None
+) -> ClientResponse:
+    data = await get_service(service_id)
+    try:
+        async with ClientSession() as session:
+            async with session.delete(
+                f"http://{data['Address']}:{data['Port']}/cleanup", headers=headers
+            ) as resp:
+                data = await resp.json(content_type=resp.content_type)
+                if resp.status != 200:
+                    raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
         LOGGER.error(
