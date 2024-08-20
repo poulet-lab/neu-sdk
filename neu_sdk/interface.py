@@ -1,3 +1,4 @@
+from re import sub
 from __init__ import __version__
 from datetime import datetime
 from fastapi import FastAPI
@@ -13,18 +14,23 @@ def create_app(service_id: str, tags: list = []):
     if not settings.neu.service.name:
         settings.neu.service.name = service_id
 
-    gateway_path = ""
+    endpoint = service_id.replace("neu-", "")
+    endpoint = sub("[-_]", "/", endpoint)
+    endpoint = f"/api/{endpoint}/"
+    gateway_path = f"http://{settings.tyk.host}:{settings.tyk.port}{endpoint}"
 
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
-        gateway_path = await add_to_gateway(service_id=service_id)
+        await add_to_gateway(service_id=service_id)
         await Migrator().run()
         yield
 
-    print(gateway_path)
     app = FastAPI(
         title=settings.neu.service.name,
-        servers=[{"url": f"{gateway_path}", "description": "Tyk Gateway"}],
+        servers=[
+            {"url": "", "description": "Internal"},
+            {"url": f"{gateway_path}", "description": "Tyk Gateway"},
+        ],
         docs_url=(
             settings.neu.service.docs.url if settings.neu.service.docs.enable else None
         ),
