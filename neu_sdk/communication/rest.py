@@ -12,7 +12,6 @@ async def get_by_pk(
 ) -> ClientResponse:
     # TODO use consul dns
     data = await get_service(service_id)
-
     try:
         async with ClientSession() as session:
             async with session.get(

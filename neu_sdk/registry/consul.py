@@ -16,10 +16,9 @@ async def ping_consul():
 async def get_service(service_id: str = settings.neu.service.name) -> dict:
     async with ClientSession() as session:
         async with session.get(f"{CONSUL_URL}/v1/agent/service/{service_id}") as resp:
-            data = await resp.json(content_type=resp.content_type)
             if resp.status != 200:
-                raise HTTPException(resp.status, data)
-            return data
+                raise HTTPException(resp.status, await resp.text())
+            return await resp.json(content_type=resp.content_type)
 
 
 async def register_service(
