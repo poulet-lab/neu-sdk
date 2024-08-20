@@ -14,22 +14,18 @@ def create_app(service_id: str, tags: list = []):
     if not settings.neu.service.name:
         settings.neu.service.name = service_id
 
-    endpoint = service_id.replace("neu-", "")
-    endpoint = sub("[-_]", "/", endpoint)
-    endpoint = f"/api/{endpoint}"
-
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
         await add_to_gateway(service_id=service_id)
         await Migrator().run()
         yield
 
+    endpoint = service_id.replace("neu-", "")
+    endpoint = sub("[-_]", "/", endpoint)
+    endpoint = f"/api/{endpoint}"
+
     app = FastAPI(
         title=settings.neu.service.name,
-        servers=[
-            {"url": "/", "description": "Internal"},
-            {"url": endpoint, "description": "Tyk Gateway"},
-        ],
         docs_url=(
             settings.neu.service.docs.url if settings.neu.service.docs.enable else None
         ),
@@ -41,6 +37,7 @@ def create_app(service_id: str, tags: list = []):
             "url": "https://www.gnu.org/licenses/agpl-3.0.txt",
         },
         lifespan=lifespan,
+        root_path=endpoint,
     )
 
     @app.get("/ping")
