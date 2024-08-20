@@ -29,7 +29,7 @@ def keyless_conf(service_id) -> dict:
         "proxy": {
             "listen_path": endpoint,
             "target_url": f"http://{host}:{settings.neu.service.port}",
-            "strip_listen_path": True,
+            "strip_listen_path": False,
         },
         "enable_batch_request_support": True,
     }

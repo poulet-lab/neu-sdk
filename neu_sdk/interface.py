@@ -27,7 +27,7 @@ def create_app(service_id: str, tags: list = []):
     app = FastAPI(
         title=settings.neu.service.name,
         servers=[
-            {"url": "", "description": "Internal"},
+            {"url": "/", "description": "Internal"},
             {"url": endpoint, "description": "Tyk Gateway"},
         ],
         docs_url=(
