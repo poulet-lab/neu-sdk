@@ -16,8 +16,7 @@ def create_app(service_id: str, tags: list = []):
 
     endpoint = service_id.replace("neu-", "")
     endpoint = sub("[-_]", "/", endpoint)
-    endpoint = f"/api/{endpoint}/"
-    gateway_path = f"http://{settings.tyk.host}:{settings.tyk.port}{endpoint}"
+    endpoint = f"/api/{endpoint}"
 
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
@@ -29,7 +28,7 @@ def create_app(service_id: str, tags: list = []):
         title=settings.neu.service.name,
         servers=[
             {"url": "", "description": "Internal"},
-            {"url": f"{gateway_path}", "description": "Tyk Gateway"},
+            {"url": endpoint, "description": "Tyk Gateway"},
         ],
         docs_url=(
             settings.neu.service.docs.url if settings.neu.service.docs.enable else None
