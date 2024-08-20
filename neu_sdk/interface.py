@@ -21,7 +21,7 @@ def create_app(service_id: str, tags: list = []):
         await Migrator().run()
         yield
 
-
+    print(gateway_path)
     app = FastAPI(
         title=settings.neu.service.name,
         servers=[{"url": f"{gateway_path}", "description": "Tyk Gateway"}],
