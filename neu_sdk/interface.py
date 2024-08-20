@@ -10,18 +10,21 @@ from neu_sdk.config import settings
 
 
 def create_app(service_id: str, tags: list = []):
-    # TODO maybe dependencies
     if not settings.neu.service.name:
         settings.neu.service.name = service_id
 
+    gateway_path = ""
+
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
-        await add_to_gateway(service_id=service_id)
+        gateway_path = await add_to_gateway(service_id=service_id)
         await Migrator().run()
         yield
 
+
     app = FastAPI(
         title=settings.neu.service.name,
+        servers=[{"url": f"{gateway_path}", "description": "Tyk Gateway"}],
         docs_url=(
             settings.neu.service.docs.url if settings.neu.service.docs.enable else None
         ),

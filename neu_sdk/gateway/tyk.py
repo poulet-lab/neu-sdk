@@ -1,3 +1,4 @@
+from re import sub
 from socket import gethostname
 from aiohttp import ClientSession
 from fastapi import HTTPException
@@ -9,7 +10,11 @@ host = (
         else settings.neu.service.host
     )
 
-def keyless_conf(service_id):
+def keyless_conf(service_id)->dict:
+    endpoint = service_id.replace("neu-", "")
+    endpoint = sub("[-_]", "/", endpoint)
+    endpoint = f"api/{endpoint}/"
+
     return {
         "name": f"{service_id}",
         "api_id": f"{service_id}",
@@ -23,15 +28,16 @@ def keyless_conf(service_id):
             },
         },
         "proxy": {
-            "listen_path": f"/api/{service_id.split("-")[-1]}/",
+            "listen_path": endpoint,
             "target_url": f"http://{host}:{settings.neu.service.port}",
             "strip_listen_path": True,
         },
         "enable_batch_request_support": True,
     }
-async def add_to_gateway(service_id: str, auth: str= "keyless"):
+async def add_to_gateway(service_id: str, auth: str= "keyless")-> str:
     if auth == "keyless":
         data = keyless_conf(service_id)
+        gateway_path = f"http://{settings.tyk.host}:{settings.tyk.port}/{data["proxy"]["listen_path"]}"
     else:
         raise NotImplemented("Auth not yes implemented")
 
@@ -52,4 +58,5 @@ async def add_to_gateway(service_id: str, auth: str= "keyless"):
             if resp.status != 200:
                 raise HTTPException(resp.status, await resp.text())
 
-        return data
+        return gateway_path
+
