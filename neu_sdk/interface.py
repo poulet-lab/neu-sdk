@@ -50,9 +50,11 @@ def create_app(service_id: str, tags: list = []):
                 "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),
             }
         )
+    # TODO config endpoinds
 
-    @app.post("/cleanup", response_class=Response)
-    async def cleanup() -> Response:
-        return Response("To be implemented on each microservice")
+    # @app.post("/cleanup", response_class=Response)
+    # async def cleanup() -> Response:
+    #     #TODO
+    #     return Response("To be implemented on each microservice")
 
     return app
