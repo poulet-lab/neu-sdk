@@ -1,11 +1,9 @@
-from re import sub
 from __init__ import __version__
 from datetime import datetime
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from aredis_om import Migrator
 
-from neu_sdk.gateway import add_to_gateway
 from neu_sdk.registry import register_service
 from neu_sdk.config import settings
 
@@ -16,13 +14,8 @@ def create_app(service_id: str, tags: list = []):
 
     async def lifespan(app):
         await register_service(service_id=service_id, tags=tags)
-        await add_to_gateway(service_id=service_id)
         await Migrator().run()
         yield
-
-    endpoint = service_id.replace("neu-", "")
-    endpoint = sub("[-_]", "/", endpoint)
-    endpoint = f"/api/{endpoint}"
 
     app = FastAPI(
         title=settings.neu.service.name,
@@ -37,7 +30,6 @@ def create_app(service_id: str, tags: list = []):
             "url": "https://www.gnu.org/licenses/agpl-3.0.txt",
         },
         lifespan=lifespan,
-        root_path=endpoint,
     )
 
     @app.get("/ping", response_class=JSONResponse)
@@ -50,6 +42,7 @@ def create_app(service_id: str, tags: list = []):
                 "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),
             }
         )
+
     # TODO config endpoinds
 
     # @app.post("/cleanup", response_class=Response)
