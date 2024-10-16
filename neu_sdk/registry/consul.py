@@ -13,7 +13,7 @@ async def ping_consul():
                 raise HTTPException(resp.status, await resp.text())
 
 
-async def get_service(service_id: str = settings.neu.service.name) -> dict:
+async def get_service(service_id: str) -> dict:
     async with ClientSession() as session:
         async with session.get(f"{CONSUL_URL}/v1/agent/service/{service_id}") as resp:
             if resp.status != 200:
@@ -23,6 +23,7 @@ async def get_service(service_id: str = settings.neu.service.name) -> dict:
 
 async def register_service(
     service_id: str,
+    service_name: str,
     check_endpoint: str = "/ping",
     interval: str = "30s",
     tags: list[str] = [],
@@ -34,7 +35,7 @@ async def register_service(
     )
     data = {
         "ID": service_id,
-        "Name": settings.neu.service.name,
+        "Name": service_name,
         "Tags": tags,
         "Address": host,
         "Port": settings.neu.service.port,
@@ -47,6 +48,21 @@ async def register_service(
     async with ClientSession() as session:
         async with session.put(
             f"{CONSUL_URL}/v1/agent/service/register", json=data
+        ) as resp:
+            data = await resp.text()
+            if resp.status != 200:
+                raise HTTPException(resp.status, data)
+            return data
+
+
+async def deregister_service(
+    service_id: str, namespace: str = "", partition: str = ""
+) -> str:
+    data = {"ns": namespace, "partition": partition}
+
+    async with ClientSession() as session:
+        async with session.put(
+            f"{CONSUL_URL}/v1/agent/service/deregister/{service_id}", json=data
         ) as resp:
             data = await resp.text()
             if resp.status != 200:

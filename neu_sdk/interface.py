@@ -1,21 +1,29 @@
+from uuid import uuid4
 from __init__ import __version__
+from contextlib import asynccontextmanager
 from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from aredis_om import Migrator
 
-from neu_sdk.registry import register_service
+from neu_sdk.registry import register_service, deregister_service
 from neu_sdk.config import settings
 
 
-def create_app(service_id: str, tags: list = []):
-    if not settings.neu.service.name:
-        settings.neu.service.name = service_id
+def create_app():
+    service_id = uuid4().hex
 
+    @asynccontextmanager
     async def lifespan(app):
-        await register_service(service_id=service_id, tags=tags)
+        await register_service(
+            service_id=service_id,
+            service_name=settings.neu.service.name,
+            tags=settings.neu.service.tags,
+        )
         await Migrator().run()
         yield
+        await deregister_service(service_id=service_id)
 
     app = FastAPI(
         title=settings.neu.service.name,

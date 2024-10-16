@@ -31,6 +31,7 @@ class Docs(BaseModel):
 
 class Service(BaseModel):
     name: str = Field("")
+    tags: list[str] = Field([])
     host: str = Field("0.0.0.0")
     port: int = Field(8000)
     docs: Docs = Docs()
