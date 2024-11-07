@@ -12,12 +12,13 @@ jobs:
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
+
       - name: Install Hatch
         uses: pypa/hatch@install
+
       - name: Format
         run: hatch run lint:fmt
+
       - name: Commit changes if needed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
