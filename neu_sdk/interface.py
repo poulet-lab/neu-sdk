@@ -1,22 +1,22 @@
-from uuid import uuid4
-from __init__ import __version__
 from contextlib import asynccontextmanager
 from datetime import datetime
+from uuid import uuid4
 
+from __init__ import __version__
+from aredis_om import Migrator
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from aredis_om import Migrator
 
-from neu_sdk.registry import register_service, deregister_service
 from neu_sdk.config import settings
+from neu_sdk.registry import deregister_service, register_service
 
 
 def create_app():
-    service_id = uuid4().hex
+    service_id = uuid4()
 
     @asynccontextmanager
     async def lifespan(app):
-        await register_service(
+        assert await register_service(
             service_id=service_id,
             service_name=settings.neu.service.name,
             tags=settings.neu.service.tags,
@@ -44,7 +44,7 @@ def create_app():
     def ping() -> JSONResponse:
         return JSONResponse(
             {
-                "service_id": service_id,
+                "service_id": service_id.hex,
                 "service_name": settings.neu.service.name,
                 "version": __version__,
                 "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),

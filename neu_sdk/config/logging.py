@@ -1,4 +1,5 @@
-from logging import Logger, Formatter, getLogger
+from logging import Formatter, Logger, getLogger
+
 from rich.console import Console
 from rich.logging import RichHandler
 
