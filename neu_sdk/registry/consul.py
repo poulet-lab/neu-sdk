@@ -31,11 +31,7 @@ async def get_service(service_name: str) -> dict:
 
 
 async def register_service(
-    service_id: UUID,
-    service_name: str,
-    check_endpoint: str = "/ping",
-    interval: str = "30s",
-    tags: list[str] = [],
+    service_id: UUID, service_name: str, check_endpoint: str = "/ping", interval: str = "30s", tags: list[str] = []
 ) -> bool:
     host = gethostname() if settings.neu.service.host == "0.0.0.0" else settings.neu.service.host
     data = {
@@ -44,10 +40,7 @@ async def register_service(
         "Tags": tags,
         "Address": host,
         "Port": settings.neu.service.port,
-        "Check": {
-            "http": f"http://{host}:{settings.neu.service.port}{check_endpoint}",
-            "interval": interval,
-        },
+        "Check": {"http": f"http://{host}:{settings.neu.service.port}{check_endpoint}", "interval": interval},
     }
 
     async with ClientSession() as session:
