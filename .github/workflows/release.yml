@@ -39,6 +39,9 @@ jobs:
         env:
           VERSION: ${{ env.version }}
         run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
           git tag -a "$VERSION" -m "Release $VERSION"
           git push origin "$VERSION"
           gh release create "$VERSION" --title "Release $VERSION" --notes "Automated release for version $VERSION"
