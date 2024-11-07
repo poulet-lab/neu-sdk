@@ -38,6 +38,7 @@ jobs:
         if: env.new_version == 'true'
         env:
           VERSION: ${{ env.version }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
