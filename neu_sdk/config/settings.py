@@ -47,9 +47,7 @@ class Settings(BaseSettings):
     consul: Consul = Consul()
     redis: Redis = Redis()
 
-    log_level: Literal["critical", "error", "warning", "info", "debug"] = Field(
-        "warning"
-    )
+    log_level: Literal["critical", "error", "warning", "info", "debug"] = Field("warning")
 
 
 settings = Settings()
