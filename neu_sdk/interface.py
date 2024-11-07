@@ -17,9 +17,7 @@ def create_app():
     @asynccontextmanager
     async def lifespan(app):
         assert await register_service(
-            service_id=service_id,
-            service_name=settings.neu.service.name,
-            tags=settings.neu.service.tags,
+            service_id=service_id, service_name=settings.neu.service.name, tags=settings.neu.service.tags
         )
         await Migrator().run()
         yield

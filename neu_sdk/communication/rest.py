@@ -43,10 +43,7 @@ async def request(
                 raise HTTPException(f"Unsupported method: {method}")
 
             async with _s(
-                f"{scheme}://{service['Address']}:{service['Port']}{path}",
-                params=params,
-                headers=headers,
-                json=data,
+                f"{scheme}://{service['Address']}:{service['Port']}{path}", params=params, headers=headers, json=data
             ) as resp:
                 if resp.status != 200:
                     raise HTTPException(resp.status, await resp.text())

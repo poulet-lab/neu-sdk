@@ -48,9 +48,7 @@ def check_password(password: str, hashed_password: str) -> bool:
 
 
 async def create_token(
-    user_id: int,
-    expiration: int | None = None,
-    token_kind: Literal["api", "session"] = "session",
+    user_id: int, expiration: int | None = None, token_kind: Literal["api", "session"] = "session"
 ) -> str:
     try:
         payload = Payload(
@@ -73,9 +71,7 @@ async def create_token(
     return token
 
 
-async def validate_token(
-    token: str | None = Depends(HTTPBearer if settings.authorization.enable else None),
-) -> Payload:
+async def validate_token(token: str | None = Depends(HTTPBearer if settings.authorization.enable else None)) -> Payload:
     if token is not None:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -83,11 +79,7 @@ async def validate_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
         try:
-            payload = decode(
-                token,
-                settings.authorization.jwt.key,
-                algorithms=[settings.authorization.jwt.algorithm],
-            )
+            payload = decode(token, settings.authorization.jwt.key, algorithms=[settings.authorization.jwt.algorithm])
             payload = Payload(**payload)
             if payload.exp:
                 if payload.exp - datetime.now(timezone.utc) < timedelta():
