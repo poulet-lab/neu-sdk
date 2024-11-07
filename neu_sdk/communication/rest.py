@@ -35,11 +35,7 @@ async def request(
                     else (
                         session.put
                         if method == "PUT"
-                        else (
-                            session.patch
-                            if method == "PATCH"
-                            else session.delete if method == "DELETE" else None
-                        )
+                        else (session.patch if method == "PATCH" else session.delete if method == "DELETE" else None)
                     )
                 )
             )
@@ -56,87 +52,59 @@ async def request(
                     raise HTTPException(resp.status, await resp.text())
                 return await resp.json(content_type=resp.content_type)
     except ClientConnectorError as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise HTTPException(500, "Internal Server Error")
     except Exception as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise e
 
 
-async def get_by_pk(
-    service_name: str, pk: str, headers: LooseHeaders | None = None
-) -> ClientResponse:
+async def get_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
         async with ClientSession() as session:
-            async with session.get(
-                f"http://{data['Address']}:{data['Port']}/{pk}", headers=headers
-            ) as resp:
+            async with session.get(f"http://{data['Address']}:{data['Port']}/{pk}", headers=headers) as resp:
                 data = await resp.json(content_type=resp.content_type)
                 if resp.status != 200:
                     raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise HTTPException(500, "Internal Server Error")
     except Exception as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise e
 
 
-async def delete_by_pk(
-    service_name: str, pk: str, headers: LooseHeaders | None = None
-) -> ClientResponse:
+async def delete_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
         async with ClientSession() as session:
-            async with session.delete(
-                f"http://{data['Address']}:{data['Port']}/{pk}", headers=headers
-            ) as resp:
+            async with session.delete(f"http://{data['Address']}:{data['Port']}/{pk}", headers=headers) as resp:
                 data = await resp.json(content_type=resp.content_type)
                 if resp.status != 200:
                     raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise HTTPException(500, "Internal Server Error")
     except Exception as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise e
 
 
-async def trigger_cleanup(
-    service_name: str, headers: LooseHeaders | None = None
-) -> ClientResponse:
+async def trigger_cleanup(service_name: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
         async with ClientSession() as session:
-            async with session.delete(
-                f"http://{data['Address']}:{data['Port']}/cleanup", headers=headers
-            ) as resp:
+            async with session.delete(f"http://{data['Address']}:{data['Port']}/cleanup", headers=headers) as resp:
                 data = await resp.json(content_type=resp.content_type)
                 if resp.status != 200:
                     raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise HTTPException(500, "Internal Server Error")
     except Exception as e:
-        LOGGER.error(
-            f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}"
-        )
+        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
         raise e

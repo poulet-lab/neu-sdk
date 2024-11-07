@@ -1,0 +1,12 @@
+name: Linter
+
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Hatch
+        uses: pypa/hatch@install
+      - name: Lint
+        run: hatch run lint:all

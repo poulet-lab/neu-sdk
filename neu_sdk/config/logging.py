@@ -18,7 +18,6 @@ def setup_logging(
     tracebacks_show_locals: bool = True,
     level: int | str = settings.log_level.upper(),
 ) -> None:
-
     console = Console(width=terminal_width) if terminal_width else None
     rich_handler = RichHandler(
         show_time=show_time,

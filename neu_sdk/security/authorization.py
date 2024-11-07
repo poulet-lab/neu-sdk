@@ -56,11 +56,7 @@ async def create_token(
         payload = Payload(
             sub=user_id,
             token_kind=KIND[token_kind],
-            exp=(
-                datetime.now(timezone.utc) + timedelta(minutes=expiration)
-                if expiration
-                else None
-            ),
+            exp=(datetime.now(timezone.utc) + timedelta(minutes=expiration) if expiration else None),
         )
         token = Token(
             access_token=encode(

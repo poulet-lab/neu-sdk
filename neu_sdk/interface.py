@@ -27,9 +27,7 @@ def create_app():
 
     app = FastAPI(
         title=settings.neu.service.name,
-        docs_url=(
-            settings.neu.service.docs.url if settings.neu.service.docs.enable else None
-        ),
+        docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
         redoc_url=None,
         version=__version__,
         license_info={
