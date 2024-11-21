@@ -24,13 +24,13 @@ classifiers = [
 ]
 
 dependencies = [
-  "pyjwt==2.9.0",
+  "pyjwt==2.10.0",
   "bcrypt==4.2.0",
   "python-dotenv==1.0.1",
   "pydantic==2.10.0",
   "pydantic-settings==2.4.0",
   "rich==13.7.1",
-  "aiohttp==3.10.3",
+  "aiohttp==3.11.6",
   "aiodns==3.2.0",
   "deprecated==1.2.14",
 ]
