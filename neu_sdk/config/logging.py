@@ -3,7 +3,7 @@ from logging import Formatter, Logger, getLogger
 from rich.console import Console
 from rich.logging import RichHandler
 
-from neu_sdk.config import settings
+from neu_sdk.config.settings import settings
 
 
 def setup_logging(
