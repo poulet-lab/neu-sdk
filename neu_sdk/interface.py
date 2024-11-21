@@ -1,23 +1,25 @@
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import uuid4
 
-from __init__ import __version__
 from aredis_om import Migrator
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from neu_sdk import __version__
 from neu_sdk.config import settings
 from neu_sdk.registry import deregister_service, register_service
 
 
-def create_app():
+def create_app(app_version: str, schema_version: str):
     service_id = uuid4()
 
     @asynccontextmanager
     async def lifespan(app):
         assert await register_service(
-            service_id=service_id, service_name=settings.neu.service.name, tags=settings.neu.service.tags
+            service_id=service_id,
+            service_name=settings.neu.service.name,
+            tags=settings.neu.service.tags,
         )
         await Migrator().run()
         yield
@@ -27,7 +29,7 @@ def create_app():
         title=settings.neu.service.name,
         docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
         redoc_url=None,
-        version=__version__,
+        version=app_version,
         license_info={
             "name": "GNU Affero General Public License v3.0 or later",
             "identifier": "AGPL-3.0-or-later",
@@ -42,8 +44,10 @@ def create_app():
             {
                 "service_id": service_id.hex,
                 "service_name": settings.neu.service.name,
-                "version": __version__,
-                "timestamp": datetime.now().strftime("%m/%d/%y %H:%M:%S"),
+                "app_version": app_version,
+                "schema_version": schema_version,
+                "sdk_version": __version__,
+                "timestamp": datetime.now(UTC).strftime("%m/%d/%y %H:%M:%S"),
             }
         )
 
