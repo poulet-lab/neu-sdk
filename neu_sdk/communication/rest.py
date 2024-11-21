@@ -1,9 +1,10 @@
 from sys import _getframe
 from typing import Any, Literal
+from warnings import deprecated
 
 from aiohttp import ClientResponse, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
-from aiohttp.typedefs import LooseHeaders, Query
+from aiohttp.typedefs import LooseHeaders
 from fastapi import HTTPException
 
 from neu_sdk.config import LOGGER, settings
@@ -12,16 +13,16 @@ from neu_sdk.registry import get_service
 # TODO grpc maybe
 
 
-async def request(
+async def neu_request(
     service_name: str,
     *,
     method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"] = "GET",
     scheme: Literal["http", "https"] = "http",
     path: str = "/",
-    params: Query = {},
+    params: dict[str, Any] | None = None,
     headers: LooseHeaders | None = None,
-    data: dict[str, Any] = {},
-) -> dict:
+    data: dict[str, Any] | None = None,
+) -> list[dict]:
     try:
         service = await get_service(service_name)
 
@@ -43,7 +44,10 @@ async def request(
                 raise HTTPException(f"Unsupported method: {method}")
 
             async with _s(
-                f"{scheme}://{service['Address']}:{service['Port']}{path}", params=params, headers=headers, json=data
+                f"{scheme}://{service['Address']}:{service['Port']}{path}",
+                params=params,
+                headers=headers,
+                json=data,
             ) as resp:
                 if resp.status != 200:
                     raise HTTPException(resp.status, await resp.text())
@@ -56,6 +60,7 @@ async def request(
         raise e
 
 
+@deprecated("Use the general neu-request instead")
 async def get_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
@@ -73,6 +78,7 @@ async def get_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = N
         raise e
 
 
+@deprecated("Use the general neu-request instead")
 async def delete_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
@@ -90,6 +96,7 @@ async def delete_by_pk(service_name: str, pk: str, headers: LooseHeaders | None 
         raise e
 
 
+@deprecated("Use the general neu-request instead")
 async def trigger_cleanup(service_name: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
