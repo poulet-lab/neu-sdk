@@ -13,10 +13,10 @@ def setup_logging(
     show_path: bool = True,
     markup: bool = True,
     rich_tracebacks: bool = True,
-    tracebacks_extra_lines: int = 3,
+    tracebacks_extra_lines: int = 4,
     tracebacks_word_wrap: bool = True,
     tracebacks_show_locals: bool = True,
-    level: int | str = settings.log_level.upper(),
+    level: int | str = settings.neu.logLevel.upper(),
 ) -> None:
     console = Console(width=terminal_width) if terminal_width else None
     rich_handler = RichHandler(
@@ -36,5 +36,5 @@ def setup_logging(
     logger.propagate = False
 
 
-LOGGER = getLogger(settings.neu.service.name)
-setup_logging(logger=LOGGER, level=settings.log_level.upper())
+LOGGER = getLogger()
+setup_logging(logger=LOGGER)
