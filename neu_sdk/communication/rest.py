@@ -60,7 +60,7 @@ async def neu_request(
         raise e
 
 
-@deprecated("Use the general neu-request instead")
+@deprecated("Use the general neu-request instead", version="0.1.3")
 async def get_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
@@ -78,7 +78,7 @@ async def get_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = N
         raise e
 
 
-@deprecated("Use the general neu-request instead")
+@deprecated("Use the general neu-request instead", version="0.1.3")
 async def delete_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
@@ -96,7 +96,7 @@ async def delete_by_pk(service_name: str, pk: str, headers: LooseHeaders | None 
         raise e
 
 
-@deprecated("Use the general neu-request instead")
+@deprecated("Use the general neu-request instead", version="0.1.3")
 async def trigger_cleanup(service_name: str, headers: LooseHeaders | None = None) -> ClientResponse:
     data = await get_service(service_name)
     try:
