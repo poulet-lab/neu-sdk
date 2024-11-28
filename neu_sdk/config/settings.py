@@ -25,8 +25,6 @@ class Docs(BaseModel):
 
 
 class Service(BaseModel):
-    name: str = Field("")
-    tags: list[str] = Field([])
     host: str = Field("0.0.0.0")
     port: int = Field(8000)
     docs: Docs = Docs()
@@ -34,6 +32,9 @@ class Service(BaseModel):
 
 class Neu(BaseModel):
     service: Service = Service()
+
+    devMode: bool = Field(False)
+    logLevel: Literal["critical", "error", "warning", "info", "debug"] = Field("warning")
 
 
 class Settings(BaseSettings):
@@ -46,8 +47,6 @@ class Settings(BaseSettings):
     neu: Neu = Neu()
     consul: Consul = Consul()
     redis: Redis = Redis()
-
-    log_level: Literal["critical", "error", "warning", "info", "debug"] = Field("warning")
 
 
 settings = Settings()
