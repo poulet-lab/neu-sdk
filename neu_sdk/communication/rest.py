@@ -1,13 +1,12 @@
-from sys import _getframe
 from typing import Any, Literal
-from deprecated import deprecated
 
 from aiohttp import ClientResponse, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
 from aiohttp.typedefs import LooseHeaders
+from deprecated import deprecated
 from fastapi import HTTPException
 
-from neu_sdk.config import LOGGER, settings
+from neu_sdk.config import LOGGER
 from neu_sdk.registry import get_service
 
 # TODO grpc maybe
@@ -41,7 +40,8 @@ async def neu_request(
                 )
             )
             if _s is None:
-                raise HTTPException(f"Unsupported method: {method}")
+                msg = f"Unsupported method: {method}"
+                raise HTTPException(msg)
 
             async with _s(
                 f"{scheme}://{service['Address']}:{service['Port']}{path}",
@@ -53,10 +53,10 @@ async def neu_request(
                     raise HTTPException(resp.status, await resp.text())
                 return await resp.json(content_type=resp.content_type)
     except ClientConnectorError as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
-        raise HTTPException(500, "Internal Server Error")
+        LOGGER.error(e)
+        raise HTTPException(500, "Internal Server Error") from e
     except Exception as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
+        LOGGER.error(e)
         raise e
 
 
@@ -71,10 +71,10 @@ async def get_by_pk(service_name: str, pk: str, headers: LooseHeaders | None = N
                     raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
-        raise HTTPException(500, "Internal Server Error")
+        LOGGER.error(e)
+        raise HTTPException(500, "Internal Server Error") from e
     except Exception as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
+        LOGGER.error(e)
         raise e
 
 
@@ -89,10 +89,10 @@ async def delete_by_pk(service_name: str, pk: str, headers: LooseHeaders | None 
                     raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
-        raise HTTPException(500, "Internal Server Error")
+        LOGGER.error(e)
+        raise HTTPException(500, "Internal Server Error") from e
     except Exception as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
+        LOGGER.error(e)
         raise e
 
 
@@ -107,8 +107,8 @@ async def trigger_cleanup(service_name: str, headers: LooseHeaders | None = None
                     raise HTTPException(resp.status, data["detail"])
                 return data
     except ClientConnectorError as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
-        raise HTTPException(500, "Internal Server Error")
+        LOGGER.error(e)
+        raise HTTPException(500, "Internal Server Error") from e
     except Exception as e:
-        LOGGER.error(f"{settings.neu.service.name}.{__name__}.{_getframe().f_code.co_name}: {e}")
+        LOGGER.error(e)
         raise e
