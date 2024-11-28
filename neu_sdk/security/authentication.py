@@ -11,9 +11,8 @@ def password_strength(password):
         r"^.*(?=.{8})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@£$%^&*()_+={}?:~\[\]])[a-zA-Z0-9!@£$%^&*()_+={}?:~\[\]]+$",
         password,
     ):
-        raise ValueError(
-            "Password must be at least 8 characters long and include at least one number, one lowercase letter, one uppercase letter, and one special character."
-        )
+        msg = "Password must be at least 8 characters long and include at least one number, one lowercase letter, one uppercase letter, and one special character."
+        raise ValueError(msg)
     return True
 
 

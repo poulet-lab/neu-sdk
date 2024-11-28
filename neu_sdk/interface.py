@@ -7,26 +7,25 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from neu_sdk import __version__
-from neu_sdk.config import settings
+from neu_sdk.config import LOGGER, settings
 from neu_sdk.registry import deregister_service, register_service
 
 
-def create_app(app_version: str, schema_version: str):
+def create_app(service_name: str, app_version: str, schema_version: str, tags: list[str] = []):
     service_id = uuid4()
 
     @asynccontextmanager
     async def lifespan(app):
-        assert await register_service(
-            service_id=service_id,
-            service_name=settings.neu.service.name,
-            tags=settings.neu.service.tags,
-        )
+        if settings.neu.devMode:
+            LOGGER.warning("You are working on developer mode")
+        assert await register_service(service_id=service_id, service_name=service_name, tags=tags)
         await Migrator().run()
         yield
         await deregister_service(service_id=service_id)
 
     app = FastAPI(
-        title=settings.neu.service.name,
+        debug=settings.neu.devMode,
+        title=service_name,
         docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
         redoc_url=None,
         version=app_version,
@@ -43,7 +42,7 @@ def create_app(app_version: str, schema_version: str):
         return JSONResponse(
             {
                 "service_id": service_id.hex,
-                "service_name": settings.neu.service.name,
+                "service_name": service_name,
                 "app_version": app_version,
                 "schema_version": schema_version,
                 "sdk_version": __version__,
