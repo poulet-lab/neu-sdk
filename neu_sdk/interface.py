@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from typing import Callable
 from uuid import uuid4
 
 from aredis_om import Migrator
@@ -11,22 +12,37 @@ from neu_sdk.config import LOGGER, settings
 from neu_sdk.registry import deregister_service, register_service
 
 
-def create_app(service_name: str, app_version: str, schema_version: str, tags: list[str] = []):
+def create_app(
+    service_name: str,
+    app_version: str,
+    schema_version: str,
+    tags: list[str] = [],
+    lifespan_before: list[Callable] = [],
+    lifespan_after: list[Callable] = [],
+):
     service_id = uuid4()
 
     @asynccontextmanager
     async def lifespan(app):
         if settings.neu.devMode:
             LOGGER.warning("You are working on developer mode")
-        assert await register_service(service_id=service_id, service_name=service_name, tags=tags)
+        assert await register_service(
+            service_id=service_id, service_name=service_name, tags=tags
+        )
         await Migrator().run()
+        for f in lifespan_before:
+            await f
         yield
         await deregister_service(service_id=service_id)
+        for f in lifespan_after:
+            await f
 
     app = FastAPI(
         debug=settings.neu.devMode,
         title=service_name,
-        docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
+        docs_url=(
+            settings.neu.service.docs.url if settings.neu.service.docs.enable else None
+        ),
         redoc_url=None,
         version=app_version,
         license_info={
