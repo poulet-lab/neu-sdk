@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Callable
 from uuid import uuid4
 
 from aredis_om import Migrator
