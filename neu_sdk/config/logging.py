@@ -21,6 +21,7 @@ def setup_logging(
     console = Console(width=terminal_width) if terminal_width else None
     rich_handler = RichHandler(
         show_time=show_time,
+        show_level=True,
         rich_tracebacks=rich_tracebacks,
         tracebacks_show_locals=tracebacks_show_locals,
         tracebacks_word_wrap=tracebacks_word_wrap,
