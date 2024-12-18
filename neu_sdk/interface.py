@@ -1,10 +1,11 @@
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from json import loads
 from uuid import uuid4
 
 from aredis_om import Migrator
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.responses import JSONResponse
 
 from neu_sdk import __version__
@@ -25,21 +26,37 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(app):
+        await Migrator().run()
+
+        for f in lifespan_before:
+            if callable(f):
+                await f()
+            else:
+                await f
+
+        if not settings.consul.external:
+            assert await register_service(
+                service_id=service_id, service_name=service_name, tags=tags
+            )
+
         if settings.neu.devMode:
             LOGGER.warning("You are working on developer mode")
-        assert await register_service(service_id=service_id, service_name=service_name, tags=tags)
-        await Migrator().run()
-        for f in lifespan_before:
-            await f
         yield
-        await deregister_service(service_id=service_id)
+        if not settings.consul.external:
+            await deregister_service(service_id=service_id)
+
         for f in lifespan_after:
-            await f
+            if callable(f):
+                await f()
+            else:
+                await f
 
     app = FastAPI(
         debug=settings.neu.devMode,
         title=service_name,
-        docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
+        docs_url=(
+            settings.neu.service.docs.url if settings.neu.service.docs.enable else None
+        ),
         redoc_url=None,
         version=app_version,
         license_info={
@@ -65,7 +82,22 @@ def create_app(
 
     @app.get("/schema", response_class=JSONResponse)
     def schema() -> JSONResponse:
-        return JSONResponse(UI.model_validate(settings.neu.ui.schema))
+
+        with open(settings.neu.ui.path, "rb") as schema:
+            ui_schema = loads(schema.read())
+            if "version" not in ui_schema:
+                raise AttributeError("version must be defined in UI schema")
+
+            if ui_schema["version"] == "v1":
+                ui_schema = UI.model_validate(ui_schema)
+            else:
+                raise AttributeError("current available versions: [v1]")
+
+        return JSONResponse(
+            ui_schema.model_dump(
+                exclude_unset=True, exclude_defaults=True, exclude_none=True
+            )
+        )
 
     # TODO config endpoinds
 
