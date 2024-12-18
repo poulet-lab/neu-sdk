@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from neu_sdk import __version__
 from neu_sdk.config import LOGGER, settings
 from neu_sdk.registry import deregister_service, register_service
+from neu_sdk.schemas import UI
 
 
 def create_app(
@@ -65,6 +66,10 @@ def create_app(
                 "timestamp": datetime.now(UTC).strftime("%m/%d/%y %H:%M:%S"),
             }
         )
+
+    @app.get("/schema", response_class=JSONResponse)
+    def schema() -> JSONResponse:
+        return JSONResponse(UI.model_validate(settings.neu.ui.schema))
 
     # TODO config endpoinds
 

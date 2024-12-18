@@ -1,7 +1,7 @@
 from typing import Literal
 
 from dotenv import find_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,9 +19,13 @@ class Consul(BaseModel):
     dns: int = Field(8600)
 
 
+class Ui(BaseModel):
+    schema: Json = Field("")
+
+
 class Docs(BaseModel):
     enable: bool = Field(False)
-    url: str = Field("/")
+    url: str = Field("/docs")
 
 
 class Service(BaseModel):
@@ -32,9 +36,12 @@ class Service(BaseModel):
 
 class Neu(BaseModel):
     service: Service = Service()
+    ui: Ui = Ui()
 
     devMode: bool = Field(False)
-    logLevel: Literal["critical", "error", "warning", "info", "debug"] = Field("warning")
+    logLevel: Literal["critical", "error", "warning", "info", "debug"] = Field(
+        "warning"
+    )
 
 
 class Settings(BaseSettings):
