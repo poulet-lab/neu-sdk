@@ -14,14 +14,20 @@ class Redis(BaseModel):
 
 
 class Consul(BaseModel):
+    external: bool = Field(False)
     host: str = Field("localhost")
     port: int = Field(8500)
     dns: int = Field(8600)
 
 
+# TODO better logic with loading schema
+class Ui(BaseModel):
+    path: str = Field("./public/ui/schemas/default.json")
+
+
 class Docs(BaseModel):
     enable: bool = Field(False)
-    url: str = Field("/")
+    url: str = Field("/docs")
 
 
 class Service(BaseModel):
@@ -32,6 +38,7 @@ class Service(BaseModel):
 
 class Neu(BaseModel):
     service: Service = Service()
+    ui: Ui = Ui()
 
     devMode: bool = Field(False)
     logLevel: Literal["critical", "error", "warning", "info", "debug"] = Field("warning")
