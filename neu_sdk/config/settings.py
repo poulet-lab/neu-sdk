@@ -1,7 +1,7 @@
 from typing import Literal
 
 from dotenv import find_dotenv
-from pydantic import BaseModel, Field, Json
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
