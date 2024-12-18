@@ -27,9 +27,7 @@ def create_app(
     async def lifespan(app):
         if settings.neu.devMode:
             LOGGER.warning("You are working on developer mode")
-        assert await register_service(
-            service_id=service_id, service_name=service_name, tags=tags
-        )
+        assert await register_service(service_id=service_id, service_name=service_name, tags=tags)
         await Migrator().run()
         for f in lifespan_before:
             await f
@@ -41,9 +39,7 @@ def create_app(
     app = FastAPI(
         debug=settings.neu.devMode,
         title=service_name,
-        docs_url=(
-            settings.neu.service.docs.url if settings.neu.service.docs.enable else None
-        ),
+        docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
         redoc_url=None,
         version=app_version,
         license_info={
