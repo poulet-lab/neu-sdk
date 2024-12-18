@@ -41,9 +41,7 @@ class Neu(BaseModel):
     ui: Ui = Ui()
 
     devMode: bool = Field(False)
-    logLevel: Literal["critical", "error", "warning", "info", "debug"] = Field(
-        "warning"
-    )
+    logLevel: Literal["critical", "error", "warning", "info", "debug"] = Field("warning")
 
 
 class Settings(BaseSettings):

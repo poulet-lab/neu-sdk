@@ -35,9 +35,7 @@ def create_app(
                 await f
 
         if not settings.consul.external:
-            assert await register_service(
-                service_id=service_id, service_name=service_name, tags=tags
-            )
+            assert await register_service(service_id=service_id, service_name=service_name, tags=tags)
 
         if settings.neu.devMode:
             LOGGER.warning("You are working on developer mode")
@@ -54,9 +52,7 @@ def create_app(
     app = FastAPI(
         debug=settings.neu.devMode,
         title=service_name,
-        docs_url=(
-            settings.neu.service.docs.url if settings.neu.service.docs.enable else None
-        ),
+        docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
         redoc_url=None,
         version=app_version,
         license_info={
@@ -82,7 +78,6 @@ def create_app(
 
     @app.get("/schema", response_class=JSONResponse)
     def schema() -> JSONResponse:
-
         with open(settings.neu.ui.path, "rb") as schema:
             ui_schema = loads(schema.read())
             if "version" not in ui_schema:
@@ -93,11 +88,7 @@ def create_app(
             else:
                 raise AttributeError("current available versions: [v1]")
 
-        return JSONResponse(
-            ui_schema.model_dump(
-                exclude_unset=True, exclude_defaults=True, exclude_none=True
-            )
-        )
+        return JSONResponse(ui_schema.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True))
 
     # TODO config endpoinds
 
