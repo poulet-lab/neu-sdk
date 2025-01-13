@@ -2,7 +2,8 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from json import loads
-from uuid import uuid4
+
+from ulid import ULID
 
 from aredis_om import Migrator
 from fastapi import FastAPI
@@ -20,7 +21,7 @@ def create_app(
     lifespan_before: list[Callable] = [],
     lifespan_after: list[Callable] = [],
 ):
-    service_id = uuid4()
+    service_id = ULID()
 
     @asynccontextmanager
     async def lifespan(app):
@@ -34,7 +35,10 @@ def create_app(
 
         if not settings.consul.external:
             assert await register_service(
-                service_id=service_id, service_name=options.service_name, tags=options.consul_tags
+                service_id=service_id,
+                service_name=options.service_name,
+                tags=options.tags,
+                meta=options.model_dump(exclude={"tags", "app_version", "schema_version"}),
             )
 
         if settings.neu.devMode:
@@ -67,7 +71,7 @@ def create_app(
     def ping() -> JSONResponse:
         return JSONResponse(
             {
-                "service_id": service_id.hex,
+                "service_id": str(service_id),
                 "service_name": options.service_name,
                 "sdk_version": __version__,
                 "app_version": options.app_version,
