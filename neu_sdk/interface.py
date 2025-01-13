@@ -5,20 +5,18 @@ from json import loads
 from uuid import uuid4
 
 from aredis_om import Migrator
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from neu_sdk import __version__
 from neu_sdk.config import LOGGER, settings
 from neu_sdk.registry import deregister_service, register_service
-from neu_sdk.schemas import UI
+from neu_sdk.schemas import UI, InterfaceOptions
 
 
+# TODO make it a Class
 def create_app(
-    service_name: str,
-    app_version: str,
-    schema_version: str,
-    tags: list[str] = [],
+    options: InterfaceOptions,
     lifespan_before: list[Callable] = [],
     lifespan_after: list[Callable] = [],
 ):
@@ -35,7 +33,9 @@ def create_app(
                 await f
 
         if not settings.consul.external:
-            assert await register_service(service_id=service_id, service_name=service_name, tags=tags)
+            assert await register_service(
+                service_id=service_id, service_name=options.service_name, tags=options.consul_tags
+            )
 
         if settings.neu.devMode:
             LOGGER.warning("You are working on developer mode")
@@ -51,10 +51,10 @@ def create_app(
 
     app = FastAPI(
         debug=settings.neu.devMode,
-        title=service_name,
+        title=options.service_name,
         docs_url=(settings.neu.service.docs.url if settings.neu.service.docs.enable else None),
         redoc_url=None,
-        version=app_version,
+        version=options.app_version,
         license_info={
             "name": "GNU Affero General Public License v3.0 or later",
             "identifier": "AGPL-3.0-or-later",
@@ -68,27 +68,29 @@ def create_app(
         return JSONResponse(
             {
                 "service_id": service_id.hex,
-                "service_name": service_name,
-                "app_version": app_version,
-                "schema_version": schema_version,
+                "service_name": options.service_name,
                 "sdk_version": __version__,
+                "app_version": options.app_version,
+                "schema_version": options.schema_version,
                 "timestamp": datetime.now(UTC).strftime("%m/%d/%y %H:%M:%S"),
             }
         )
 
-    @app.get("/schema", response_class=JSONResponse)
-    def schema() -> JSONResponse:
-        with open(settings.neu.ui.path, "rb") as schema:
-            ui_schema = loads(schema.read())
-            if "version" not in ui_schema:
-                raise AttributeError("version must be defined in UI schema")
+    if options.ui:
 
-            if ui_schema["version"] == "v1":
-                ui_schema = UI.model_validate(ui_schema)
-            else:
-                raise AttributeError("current available versions: [v1]")
+        @app.get("/ui/schema", response_class=JSONResponse)
+        def ui_schema() -> JSONResponse:
+            with open(settings.neu.ui.path, "rb") as schema:
+                ui_schema = loads(schema.read())
+                if "version" not in ui_schema:
+                    raise AttributeError("version must be defined in UI schema")
 
-        return JSONResponse(ui_schema.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True))
+                if ui_schema["version"] == "v1":
+                    ui_schema = UI.model_validate(ui_schema)
+                else:
+                    raise AttributeError("current available versions: [v1]")
+
+            return JSONResponse(ui_schema.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True))
 
     # TODO config endpoinds
 
