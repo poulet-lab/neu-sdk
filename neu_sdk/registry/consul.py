@@ -1,6 +1,6 @@
 from secrets import choice
 from socket import gethostbyname_ex, gethostname
-from uuid import UUID
+from ulid import ULID
 
 from aiohttp import ClientSession
 from fastapi import HTTPException
@@ -18,41 +18,43 @@ async def ping_consul():
 
 
 async def get_service(service_name: str) -> dict:
+    params = {"passing": "true"}
+    if settings.neu.devMode:
+        params["filter"] = '"dev" in Service.Tags'
     async with ClientSession() as session:
-        async with session.get(f"{CONSUL_URL}/v1/health/service/{service_name}?passing=true") as resp:
+        async with session.get(f"{CONSUL_URL}/v1/health/service/{service_name}", params=params) as resp:
             if resp.status != 200:
                 raise HTTPException(resp.status, await resp.text())
 
             healthy = await resp.json(content_type=resp.content_type)
 
             if not healthy:
-                msg = f"No healthy services found with name: {service_name}"
-                raise HTTPException(msg)
-
-            if settings.neu.devMode:
-                for service in healthy:
-                    if "dev" in service["Service"]["ID"]:
-                        return service["Service"]
-
-                msg = "In dev mode there should all required services should also run in dev mode"
-                raise RuntimeError(msg)
+                msg = f"Service: {service_name} is unavailable"
+                raise HTTPException(503, msg)
 
             return choice(healthy)["Service"]
 
 
 async def register_service(
-    service_id: UUID,
+    service_id: ULID,
     service_name: str,
     check_endpoint: str = "/ping",
     interval: str = "30s",
     tags: list[str] = [],
+    meta: dict[str, str] = {},
 ) -> bool:
     host = gethostbyname_ex(gethostname())[0] if settings.neu.service.host == "0.0.0.0" else settings.neu.service.host
 
+    if settings.neu.devMode:
+        tags += ["dev"]
+
+    meta["app"] = "neu"
+
     data = {
-        "ID": service_id.hex if not settings.neu.devMode else f"{service_id.hex}_dev",
+        "ID": str(service_id),
         "Name": service_name,
         "Tags": tags,
+        "Meta": meta,
         "Address": host,
         "Port": settings.neu.service.port,
         "Check": {
@@ -69,13 +71,12 @@ async def register_service(
             return True
 
 
-async def deregister_service(service_id: UUID, namespace: str = "", partition: str = "") -> str:
-    service = service_id.hex if not settings.neu.devMode else f"{service_id.hex}_dev"
+async def deregister_service(service_id: ULID, namespace: str = "", partition: str = "") -> str:
     data = {"ns": namespace, "partition": partition}
 
     async with ClientSession() as session:
         async with session.put(
-            f"{CONSUL_URL}/v1/agent/service/deregister/{service}",
+            f"{CONSUL_URL}/v1/agent/service/deregister/{service_id!s}",
             json=data,
         ) as resp:
             data = await resp.text()
