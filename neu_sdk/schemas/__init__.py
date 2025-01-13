@@ -1,3 +1,4 @@
-__all__ = ["ui"]
+__all__ = ["ui", "interface"]
 
-from neu_sdk.schemas.v1 import UI
+from neu_sdk.schemas.ui import UI
+from neu_sdk.schemas.interface import InterfaceOptions
