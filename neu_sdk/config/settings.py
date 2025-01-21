@@ -21,8 +21,9 @@ class Consul(BaseModel):
 
 
 # TODO better logic with loading schema
+# TODO auto refresh schema
 class Ui(BaseModel):
-    path: str = Field("./public/ui/schemas/default.json")
+    schema: str = Field("./public/ui/schemas/default.json")
 
 
 class Docs(BaseModel):

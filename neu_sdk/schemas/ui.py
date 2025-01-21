@@ -1,14 +1,16 @@
+from ast import main
+from email import header
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from httpx import request
+from pydantic import BaseModel, Field as PydanticField
 
 
 class FieldTypes(str, Enum):
     STRING = "string"
     NUMBER = "number"
     EMAIL = "email"
-    USERNAME = "username"
     PASSWORD = "password"
     JSON = "json"
     ARRAY = "array"
@@ -16,15 +18,18 @@ class FieldTypes(str, Enum):
 
 class ComponentTypes(str, Enum):
     HEADER = "header"
-    ORDERED_BOX = "ordered_box"
-    CONTAINER = "container"
-    TAB = "tab"
-    TABLE = "table"
-    MODAL = "modal"
-    JSON = "json"
+    LIST = "list"
+    PLAIN = "plain"
 
 
-class ModuleTypes(str, Enum):
+class SectionTypes(str, Enum):
+    SIDEBAR = "sidebar"
+    HEADER = "header"
+    MAIN = "main"
+    SECONDARY = "secondary"
+
+
+class SectionTypes(str, Enum):
     SIDEBAR = "sidebar"
     HEADER = "header"
     MAIN = "main"
@@ -43,22 +48,26 @@ class Methods(str, Enum):
     DELETE = "DELETE"
 
 
-class FieldOptions(BaseModel):
-    api_name: str | None = Field(None, description="Rename the field to avoid duplicates")
-    display_name: str | None = Field(None, description="The name to render on UI.")
-    type: FieldTypes = Field(FieldTypes.STRING, description="Type of the field")
-    required: bool = Field(False, description="Whether it is mandatory on create")
-    dangerous: bool = Field(False, description="Whether extra care should be taken for this field")
+class Field(BaseModel):
+    label: str | None = PydanticField(None, description="The name to render on UI.")
+    type: FieldTypes = PydanticField(FieldTypes.STRING, description="Type of the field")
+    required: bool = PydanticField(False, description="Whether it is mandatory on create")
+
+
+class Element(BaseModel):
+    request: str = PydanticField(description="reference to a request to use in the element")
 
 
 class Component(BaseModel):
-    name: str = Field(description="unique name for the component, will be used as id in UI")
-    type: ComponentTypes = Field(description="type of the component to use in UI")
-    title: str | None = Field(None, description="Title of the component to use in UI")
-    href: str | None = Field(None, description="Whether to redirect by clicking on the component title")
-    fields: list[str] | None = Field(None, description="Field names to display")
-
-    components: list["Component"] | None = Field([], description="use for container type")
+    key: str = PydanticField(description="unique name for the component, will be used as id in UI")
+    type: ComponentTypes = PydanticField(description="type of the component to use in UI")
+    title: str | None = PydanticField(None, description="Title of the component to use in UI")
+    href: str | None = PydanticField(None, description="Whether to redirect by clicking on the component title")
+    request: str = PydanticField(description="reference to a request to use in the component")
+    elements: dict[str, Element] = PydanticField(
+        {}, description="elements to render in the component, key is the available element name"
+    )
+    components: list["Component"] | None = PydanticField([], description="use for container type")
 
 
 class Sidebar(BaseModel):
@@ -77,29 +86,27 @@ class Secondary(BaseModel):
     components: list[Component] = []
 
 
+class Section(BaseModel):
+    header: Header = Header()
+    main: Main = Main()
+    secondary: Secondary = Secondary()
+    sidebar: Sidebar = Sidebar()
+
+
 class Page(BaseModel):
-    path: str = Field(description="Page path")
-    modules: dict[ModuleTypes, list[Component]]
+    section: Section = Section()
 
 
 class Request(BaseModel):
-    service_name: str = Field(description="Neu service to make a request")
-    route: str = Field(description="Neu service route")
-    method: Methods = Field(Methods.GET, description="Request method")
-    is_list: bool = Field(False, description="Whether the returned data are in a form of list")
-    fields: dict[str, FieldOptions]
-
-
-class FunctionOptions(BaseModel):
-    fields: list[str] = Field([], description="the fields to use in the function")
-
-
-class Definitions(BaseModel):
-    request: dict[str, Request] = Field({}, description="All the available fields")
-    functions: dict[Functions, FunctionOptions] = Field({}, description="options of pre-defined functions")
+    service_name: str = PydanticField(description="Neu service to make a request")
+    path: str = PydanticField(description="Neu service route")
+    method: Methods = PydanticField(Methods.GET, description="Request method")
+    fields: dict[str, Field] = PydanticField({}, description="Request fields, key is the field name")
 
 
 class UI(BaseModel):
-    version: Literal["v1"] = Field(description="neu ui schema version")
-    definitions: Definitions = Definitions()
-    pages: list[Page] = Field(description="list of pages for the service")
+    version: Literal["v1"] = PydanticField(description="neu ui schema version")
+    requests: dict[str, Request] = PydanticField(
+        {}, description="neu ui schema requests, key is the request identifier"
+    )
+    pages: dict[str, Page] = PydanticField(description="dict of pages for the service, key is the path")
