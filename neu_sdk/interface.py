@@ -84,15 +84,25 @@ def create_app(
 
         @app.get("/ui/schema", response_class=JSONResponse)
         def ui_schema() -> JSONResponse:
-            with open(settings.neu.ui.path, "rb") as schema:
-                ui_schema = loads(schema.read())
-                if "version" not in ui_schema:
-                    raise AttributeError("version must be defined in UI schema")
-
-                if ui_schema["version"] == "v1":
-                    ui_schema = UI.model_validate(ui_schema)
+            try:
+                if ".json" not in settings.neu.ui.schema:
+                    ui_schema = loads(settings.neu.ui.schema)
                 else:
-                    raise AttributeError("current available versions: [v1]")
+                    with open(settings.neu.ui.schema, "rb") as schema:
+                        ui_schema = loads(schema.read())
+            except Exception as e:
+                LOGGER.error(f"Error loading UI schema: {e}")
+                raise e
+
+            if "version" not in ui_schema:
+                msg = "version must be defined in UI schema"
+                raise AttributeError(msg)
+
+            if ui_schema["version"] == "v1":
+                ui_schema = UI.model_validate(ui_schema)
+            else:
+                msg = "current available versions: [v1]"
+                raise AttributeError(msg)
 
             return JSONResponse(ui_schema.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True))
 
