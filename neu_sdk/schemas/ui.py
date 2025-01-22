@@ -1,9 +1,6 @@
-from ast import main
-from email import header
 from enum import Enum
 from typing import Literal
 
-from httpx import request
 from pydantic import BaseModel, Field as PydanticField
 
 
@@ -13,6 +10,7 @@ class FieldTypes(str, Enum):
     EMAIL = "email"
     PASSWORD = "password"
     JSON = "json"
+    CHECKBOX = "checkbox"
     ARRAY = "array"
 
 
